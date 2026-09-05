@@ -4,6 +4,15 @@ from ingestion.extractors import extract_from_uploaded_files
 from ingestion.chunker import split_documents
 from vectorstore.chroma_store import create_vector_store
 from retrieval.search import search_documents
+from generation.llm import MODEL_NAME, generate_answer
+from history.manager import (
+    create_conversation,
+    save_conversation,
+    load_conversation,
+    list_conversations
+)
+
+# --- Configuration ---
 
 st.set_page_config(
     page_title="NotebookLM Clone",
@@ -11,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Chargement bootstrap local
+# --- Chargement bootstrap local ---
 bootstrap_css = Path("static/css/bootstrap.min.css").read_text(encoding="utf-8")
 bootstrap_js = Path("static/js/bootstrap.bundle.min.js").read_text(encoding="utf-8")
 
@@ -74,12 +83,16 @@ st.markdown(
 
 # - END CSS ZONE -
 
-# Etat de l'application
+# --- Initiation de la session ---
+if "conversation_id" not in st.session_state:
+    st.session_state.conversation_id = create_conversation()
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 if "rag_mode" not in st.session_state:
     st.session_state.rag_mode = True
+
 
 
 # ----- SIDEBAR -----
@@ -97,6 +110,8 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
+    # ----- SOURCES -----
+
     st.markdown("### Sources")
 
     fichiers = st.file_uploader(
@@ -109,118 +124,225 @@ with st.sidebar:
         st.caption(f"{len(fichiers)} document(s) selectionné(s)")
 
         for fichier in fichiers:
-            st.markdown(
-                f"📄 {fichier.name}"
-            )
+            st.markdown(f"📄 {fichier.name}")
 
     st.markdown("")
 
     if st.button(
-        "Indexer les docs",
+        "Indexer les documents",
         use_container_width=True
     ):
         if not fichiers:
             st.warning("Ajouter d'abord un document")
         else:
-            documents = extract_from_uploaded_files(fichiers)
+            with st.spinner("Indexation en cours..."):
+                documents = extract_from_uploaded_files(fichiers)
 
-            chunks = split_documents(documents)
-            # --- Test ---
-            # for i, chunk in enumerate(chunks):
-            #     print(f"\n {i + 1}: {len(chunk.page_content)} caracteres")
+                chunks = split_documents(documents)
+                # --- Test ---
+                # for i, chunk in enumerate(chunks):
+                #     print(f"\n {i + 1}: {len(chunk.page_content)} caracteres")
 
-            vector_store = create_vector_store(chunks)
+                create_vector_store(chunks)
 
-            resultats = vector_store.get()
+                # resultats = vector_store.get()
+                # st.write("Nombre de chunks dans Chroma :", len(resultats["documents"]))
 
-            # st.write("Nombre de chunks dans Chroma :", len(resultats["documents"]))
-
-            print(f"{len(documents)} document(s) extrait(s) -> {len(chunks)} chunk(s)")
-            st.success("Document(s) indexé(s)")   
+                print(f"{len(documents)} document(s) extrait(s) -> {len(chunks)} chunk(s)")
+                st.success("Document(s) indexé(s)")   
 
     st.divider()
+
+    # --- END SOURCES ---
+
+    # ----- MODE -----
 
     st.markdown("### Modele")
 
     st.session_state.rag_mode = st.toggle(
-        "Assistant RAG",
+        "RAG activé",
         value=st.session_state.rag_mode
     )
 
     if st.session_state.rag_mode:
-        st.caption("🟢 Assistant RAG complet")
+        st.caption("🟢 RAG complet")
     else:
-        st.caption("🔴 Recherche semantique pure")
+        st.caption("🔴 Recherche semantique")
+
+    st.divider()
+
+    # --- END MODE ---
+
+    # ----- HISTORIQUE -----
+
+    st.markdown("### Historique")
+
+    if st.button(
+        "Nouvelle conversation",
+        use_container_width=True
+    ):
+        st.session_state.conversation_id = (
+            create_conversation()
+        )
+        st.session_state.messages = []
+        st.rerun()
+
+    conversations = list_conversations()
+
+    for conversation_file in conversations:
+        conversation_id = conversation_file.stem
+
+        if conversation_id == st.session_state.conversation_id:
+            label = f"🟢 {conversation_id}"
+        else:
+            label = conversation_id
+
+        if st.button(
+            label,
+            key=f"conversation_{conversation_id}",
+            use_container_width=True
+        ):
+            st.session_state.conversation_id = (
+                conversation_id
+            )
+
+            st.session_state.messages = (
+                load_conversation(conversation_id)
+            )
+
+            st.rerun()
+
+    # --- END HISTORIQUE ---
 
 # --- END SIDEBAR ---
 
-# ===== ZONE PRINCIPALE =====
+
+# ======= ZONE PRINCIPALE =======
+
+# ----- EN-TETE -----
 
 st.markdown(
     """
     <div class="mb-4">
-        <div class="app-title">Assistant documentaire</div>
+        <div class="app-title">
+            Assistant documentaire
+        </div>
         <div class="app-subtitle">
-            Posez une question a propos de vos documents.
+            Posez une question à propos de vos documents.
         </div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# -- Historiques --
-if not st.session_state.messages:
-    st.markdown(
-        """
-        <div class="chat-card text-center">
-            <div style="font-size: 2rem;"></div>
-            <h5>Bienvenue</h5>
-            <p class="text-muted mb-0">
-                Importez vos documents puis posez une question.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )     
-else: 
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])  
+# --- END EN-TETE ---
 
-# -- Input Converstion --
+# ----- HISTORIQUE DE LA CONVERSATION ACTUELLE -----
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(
+            message["content"]
+        )
+
+        # Affichage des sources sauvegardees
+        if message.get("sources"):
+            with st.expander("Voir les extraits utilisés"):
+                for i, source in enumerate(message["sources"],start=1):
+                    st.markdown(
+                        f"**Extrait {i} — {source['filename']}**"
+                    )
+
+                    st.write(
+                        source["content"]
+                    )
+
+                    st.divider()
+
+# -------------------------------------------------- 
+
+# --- Input Conversation ---
 question = st.chat_input("Posez une question...")
 
 if question:
-    st.session_state.messages.append(
-        {"role": "user", "content": question}
-    )
+    user_message = {
+        "role": "user",
+        "content": question
+    }
+
+    st.session_state.messages.append(user_message)
 
     with st.chat_message("user"):
         st.markdown(question)
 
-    if not st.session_state.rag_mode:
-        resultats = search_documents(question, k=5)
+    # -- Recherche des chunks --
+    with st.spinner("Recherche dans les documents..."):
+        documents = search_documents(question,k=5)
 
+    # Preparation des sources pour historique
+    sources = []
+
+    for document in documents:
+        sources.append(
+            {
+                "filename": document.metadata.get(
+                    "source",
+                    "Source inconnue"
+                ),
+                "content": document.page_content
+            }
+        )
+
+    # Si recherche semantique et non rag
+    if not st.session_state.rag_mode:
         with st.chat_message("assistant"):
             st.markdown("### Résultats de la recherche sémantique")
 
-            for i, document in enumerate(resultats, start=1):
+            for i, document in enumerate(documents, start=1):
                 source = document.metadata.get("source", "Source inconnue")
 
                 st.markdown(f"**Résultat {i} — {source}**")
                 st.write(document.page_content)
                 st.divider()
-    else:
-        reponse = (
-            "Le système RAG n'est pas encore connecté. "
-            "Cette partie sera ajoutée dans les prochaines étapes."
-        )
 
-        st.session_state.messages.append(
-            {"role": "assistant", "content": reponse}
-        )
+        assistant_message = {
+            "role": "assistant",
+            "content": (
+                "Résultats de la recherche sémantique"
+            ),
+            "sources": sources
+        }
+
+    # Mode rag complet
+    else:
+        with st.spinner(f"{MODEL_NAME} analyse les documents..."):
+            reponse = generate_answer(question, documents)
 
         with st.chat_message("assistant"):
             st.markdown(reponse)
 
-# === END ZONE PRINCIPALE ===
+            # -- Transparence --
+            with st.expander("Voir les extraits utilisés comme contexte"):
+                for i, source in enumerate(sources, start=1):
+                    st.markdown(f"**Extrait {i} — {source['filename']}**")
+                    st.write(source["content"])
+
+                    st.divider()
+
+        assistant_message = {
+            "role": "assistant",
+            "content": reponse,
+            "sources": sources
+        }
+
+    st.session_state.messages.append(
+        assistant_message
+    )
+
+    # -- Sauvegarde JSON --
+    save_conversation(
+        st.session_state.conversation_id,
+        st.session_state.messages
+    )
+
+# ===== END ZONE PRINCIPALE =====

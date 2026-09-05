@@ -1,0 +1,35 @@
+{
+  "id": "20260906_012352_953831",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Qu'est-ce que le Deep Learning ?"
+    },
+    {
+      "role": "assistant",
+      "content": "Le Deep Learning est une méthode d'apprentissage automatique qui consiste à former des modèles de réseau neuronal qui peuvent apprendre des représentations hiérarchiques des données, plutôt que de dépendre uniquement de features manuelles.",
+      "sources": [
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Conclusion : idées à retenir\nLE DEEP LEARNING COMME APPRENTISSAGE DE REPRÉSENTATIONS\n1\nLe DL apprend des représentations hiérarchiques au lieu de dépendre uniquement de \nfeatures manuelles.\n2\nUn réseau est une composition différentiable de couches paramétrées.\n3\nLa rétropropagation calcule efficacement les gradients pour tous les paramètres.\n4\nCNN, RNN et Transformers ajoutent des hypothèses adaptées aux images, séquences et \ndépendances globales.\nQuestion finale : quelle représentation le modèle doit-il apprendre pour \nrésoudre la tâche ?\n27"
+        },
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Introduction au\nDeep Learning\nDu Machine Learning classique aux réseaux de neurones \nmodernes\nMaster\nx1\nx2\nx3\nh1\nh2\nh3\nh4\no1\nŷ\no3\nReprésentation → apprentissage → généralisation\n01"
+        },
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Détails qui changent réellement l’entraînement\nOPTIMISATION PRATIQUE\nComposant\nQuestion posée\nChoix courant\nInitialisation\néviter explosion/annulation des activations\nXavier, He\nNormalisation\nstabiliser les distributions internes\nBatchNorm, LayerNorm\nOptimiseur\ncontrôler vitesse et stabilité\nSGD+momentum, AdamW\nRégularisation\naméliorer généralisation\ndropout, weight decay\nMonitoring\ndétecter divergence ou overfit\nloss curves, gradients\nPour un Master, il faut analyser un entraînement comme un système dynamique : \ngradients, échelles, bruit, capacité et données.\n17"
+        },
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Pourquoi les MLP ne suffisent pas pour les images\nLE PROBLÈME DES PARAMÈTRES ET DE LA STRUCTURE\nImage 224×224×3 = 150 528 entrées\nCouche 1 000 neurones ≈ 150 M poids\n• La position locale des pixels compte.\n• Les motifs se répètent dans l’image.\n• Une petite translation ne devrait pas changer la \nclasse.\n• MLP : connectivité dense, peu d’a priori \nspatial.\n• CNN : filtres partagés, localité, \néquivariance approximative.\nLes architectures encodent des hypothèses sur les \ndonnées : ce sont des biais inductifs.\n18"
+        },
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Outils Python pour le Deep Learning\nL'ÉCOSYSTÈME DE RÉFÉRENCE POUR LE DÉVELOPPEMENT DE MODÈLES\n01\nPyTorch\nLe standard de la recherche\nDéveloppé par Meta, il s'est imposé comme \nl'outil privilégié pour la flexibilité et la rapidité de \nprototypage.\n●\nGraphe de calcul dynamique (Autograd)\n●\nIntégration Python native et intuitive\n●\nÉcosystème riche (Torchvision, Hugging \nFace)\n02\nTensorFlow / Keras\nPrêt pour la production\nL'écosystème robuste de Google, conçu pour le \ndéploiement industriel à grande échelle et les \narchitectures serveur.\n●\nKeras comme API haut niveau simplifiée\n●\nTensorBoard pour la visualisation fine\n●\nDéploiement multiplateforme (TF Lite, TF \nServing)\n03\nJAX\nHaute performance & Recherche\nLa nouvelle génération de calcul numérique par \nGoogle, axée sur les transformations de \nfonctions et la vitesse pure.\n●\nCompilation JIT (XLA) pour accélération \nGPU/TPU\n●\nDifférentiation automatique avancée \n(Autograd)\n●\nIdéal pour la recherche en physique et ML \nthéorique"
+        }
+      ]
+    }
+  ]
+}

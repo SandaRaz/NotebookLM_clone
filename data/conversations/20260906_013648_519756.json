@@ -1,0 +1,35 @@
+{
+  "id": "20260906_013648_519756",
+  "messages": [
+    {
+      "role": "user",
+      "content": "C'est quoi le Deep Learning ?"
+    },
+    {
+      "role": "assistant",
+      "content": "Résultats de la recherche sémantique",
+      "sources": [
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Conclusion : idées à retenir\nLE DEEP LEARNING COMME APPRENTISSAGE DE REPRÉSENTATIONS\n1\nLe DL apprend des représentations hiérarchiques au lieu de dépendre uniquement de \nfeatures manuelles.\n2\nUn réseau est une composition différentiable de couches paramétrées.\n3\nLa rétropropagation calcule efficacement les gradients pour tous les paramètres.\n4\nCNN, RNN et Transformers ajoutent des hypothèses adaptées aux images, séquences et \ndépendances globales.\nQuestion finale : quelle représentation le modèle doit-il apprendre pour \nrésoudre la tâche ?\n27"
+        },
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Pourquoi les MLP ne suffisent pas pour les images\nLE PROBLÈME DES PARAMÈTRES ET DE LA STRUCTURE\nImage 224×224×3 = 150 528 entrées\nCouche 1 000 neurones ≈ 150 M poids\n• La position locale des pixels compte.\n• Les motifs se répètent dans l’image.\n• Une petite translation ne devrait pas changer la \nclasse.\n• MLP : connectivité dense, peu d’a priori \nspatial.\n• CNN : filtres partagés, localité, \néquivariance approximative.\nLes architectures encodent des hypothèses sur les \ndonnées : ce sont des biais inductifs.\n18"
+        },
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Détails qui changent réellement l’entraînement\nOPTIMISATION PRATIQUE\nComposant\nQuestion posée\nChoix courant\nInitialisation\néviter explosion/annulation des activations\nXavier, He\nNormalisation\nstabiliser les distributions internes\nBatchNorm, LayerNorm\nOptimiseur\ncontrôler vitesse et stabilité\nSGD+momentum, AdamW\nRégularisation\naméliorer généralisation\ndropout, weight decay\nMonitoring\ndétecter divergence ou overfit\nloss curves, gradients\nPour un Master, il faut analyser un entraînement comme un système dynamique : \ngradients, échelles, bruit, capacité et données.\n17"
+        },
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "Introduction au\nDeep Learning\nDu Machine Learning classique aux réseaux de neurones \nmodernes\nMaster\nx1\nx2\nx3\nh1\nh2\nh3\nh4\no1\nŷ\no3\nReprésentation → apprentissage → généralisation\n01"
+        },
+        {
+          "filename": "introduction_deep_learning.pdf",
+          "content": "MLP simple appliqué aux images\nEXEMPLE : CLASSIFICATION D’IMAGES\nImage\nH×W×C\nFlatten\n1D\nScores\nclasses\n• Le MLP fonctionne, mais il perd la structure spatiale : voisinage, translation, motifs locaux.\n• Pour les images, les CNN ajoutent un biais inductif beaucoup plus adapté.\n10"
+        }
+      ]
+    }
+  ]
+}

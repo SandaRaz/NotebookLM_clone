@@ -6,9 +6,9 @@ def create_embedding_model():
     )
 
 # --- Test ---
-model = create_embedding_model()
-texte = "La ville d'Antananarivo est la capitale de Madagascar"
-vecteur = model.embed_query(texte)
+# model = create_embedding_model()
+# texte = "La ville d'Antananarivo est la capitale de Madagascar"
+# vecteur = model.embed_query(texte)
 
-print("nombre de dimensions:", len(vecteur))
-print("premieres valeurs:", vecteur[:10])
+# print("nombre de dimensions:", len(vecteur))
+# print("premieres valeurs:", vecteur[:10])
