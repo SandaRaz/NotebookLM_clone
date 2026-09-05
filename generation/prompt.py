@@ -1,5 +1,6 @@
 from langchain_core.prompts import PromptTemplate
 
+# Creer un template de prompt pour un system strict
 def create_rag_prompt():
     return PromptTemplate(
         input_variables=["context", "question"],
