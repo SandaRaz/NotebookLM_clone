@@ -1,5 +1,8 @@
 import streamlit as st
 from pathlib import Path
+from ingestion.extractors import extract_from_uploaded_files
+from ingestion.chunker import split_documents
+from vectorstore.chroma_store import create_vector_store
 
 st.set_page_config(
     page_title="NotebookLM Clone",
@@ -115,10 +118,22 @@ with st.sidebar:
         "Indexer les docs",
         use_container_width=True
     ):
-        if fichiers:
-            st.success("Documents prets pour l'indexation")
-        else:
+        if not fichiers:
             st.warning("Ajouter d'abord un document")
+        else:
+            documents = extract_from_uploaded_files(fichiers)
+
+            chunks = split_documents(documents)
+            # --- Test ---
+            # for i, chunk in enumerate(chunks):
+            #     print(f"\n {i + 1}: {len(chunk.page_content)} caracteres")
+
+            vector_store = create_vector_store(chunks)
+
+            st.success(
+                f"{len(documents)} document(s) extrait(s) ->"
+                f"{len(chunks)} chunk(s)"
+            )   
 
     st.divider()
 

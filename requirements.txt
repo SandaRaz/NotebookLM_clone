@@ -43,9 +43,11 @@ jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
 kubernetes==36.0.3
 langchain==1.4.0
+langchain-chroma==1.1.0
 langchain-classic==1.0.8
 langchain-community==0.4.2
 langchain-core==1.6.1
+langchain-huggingface==1.2.2
 langchain-protocol==0.0.19
 langchain-text-splitters==1.1.2
 langgraph==1.2.11
@@ -116,6 +118,7 @@ threadpoolctl==3.6.0
 tokenizers==0.23.2
 toml==0.10.2
 torch==2.14.0
+torchvision==0.29.0
 tqdm==4.70.0
 transformers==5.16.1
 truststore==0.10.4
