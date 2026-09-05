@@ -4,6 +4,7 @@ from langchain_community.document_loaders import (
     PyMuPDFLoader,
     TextLoader
 )
+from ingestion.hashing import calculate_file_hash
 
 def extract_file(file_path: str):
     extension = Path(file_path).suffix.lower()
@@ -28,17 +29,21 @@ def extract_from_uploaded_files(fichiers):
     for fichier in fichiers:
         suffix = Path(fichier.name).suffix
 
+        file_content = fichier.getvalue()
+        file_hash = calculate_file_hash(file_content)
+
         with tempfile.NamedTemporaryFile(
             delete=False,
             suffix=suffix
         ) as temp_file:
-            temp_file.write(fichier.getvalue())
+            temp_file.write(file_content)
             temp_path = temp_file.name
 
         docs = extract_file(temp_path)
 
         for doc in docs:
             doc.metadata["source"] = fichier.name
+            doc.metadata["file_hash"] = file_hash
 
         documents.extend(docs)
 

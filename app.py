@@ -3,6 +3,7 @@ from pathlib import Path
 from ingestion.extractors import extract_from_uploaded_files
 from ingestion.chunker import split_documents
 from vectorstore.chroma_store import create_vector_store
+from retrieval.search import search_documents
 
 st.set_page_config(
     page_title="NotebookLM Clone",
@@ -130,10 +131,12 @@ with st.sidebar:
 
             vector_store = create_vector_store(chunks)
 
-            st.success(
-                f"{len(documents)} document(s) extrait(s) ->"
-                f"{len(chunks)} chunk(s)"
-            )   
+            resultats = vector_store.get()
+
+            # st.write("Nombre de chunks dans Chroma :", len(resultats["documents"]))
+
+            print(f"{len(documents)} document(s) extrait(s) -> {len(chunks)} chunk(s)")
+            st.success("Document(s) indexé(s)")   
 
     st.divider()
 
@@ -189,31 +192,35 @@ question = st.chat_input("Posez une question...")
 
 if question:
     st.session_state.messages.append(
-        {
-            "role": "user",
-            "content": question
-        }
+        {"role": "user", "content": question}
     )
 
     with st.chat_message("user"):
         st.markdown(question)
 
-    if not st.session_state.llm_active:
-        reponse = "Le RAG LLM est actuellement desactivé"
+    if not st.session_state.rag_mode:
+        resultats = search_documents(question, k=5)
+
+        with st.chat_message("assistant"):
+            st.markdown("### Résultats de la recherche sémantique")
+
+            for i, document in enumerate(resultats, start=1):
+                source = document.metadata.get("source", "Source inconnue")
+
+                st.markdown(f"**Résultat {i} — {source}**")
+                st.write(document.page_content)
+                st.divider()
     else:
         reponse = (
             "Le système RAG n'est pas encore connecté. "
             "Cette partie sera ajoutée dans les prochaines étapes."
         )
 
-    st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": reponse
-        }
-    )
+        st.session_state.messages.append(
+            {"role": "assistant", "content": reponse}
+        )
 
-    with st.chat_message("assistant"):
-        st.markdown(reponse)
+        with st.chat_message("assistant"):
+            st.markdown(reponse)
 
 # === END ZONE PRINCIPALE ===
